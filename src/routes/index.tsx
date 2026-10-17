@@ -28,10 +28,12 @@ const EVENTS = [
   { name: "Nikah", when: "2027-02-14T19:00:00+05:30", place: "The Grand Pavilion", note: "Ceremony followed by dinner" },
   { name: "Walima", when: "2027-02-15T20:00:00+05:30", place: "The Lantern Hall, The Grand Pavilion", note: "Reception & celebration" },
 ];
-const fmtDate = (iso: string) =>
-  new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
-const fmtTime = (iso: string) =>
-  new Intl.DateTimeFormat("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(iso));
+// Deterministic IST (+05:30) formatting so server and phone render identically
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ist = (iso: string) => new Date(new Date(iso).getTime() + 330 * 60000);
+const fmtDate = (iso: string) => { const d = ist(iso); return `${DAYS[d.getUTCDay()]}, ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+const fmtTime = (iso: string) => { const d = ist(iso); const h = d.getUTCHours(); return `${h % 12 || 12}:${String(d.getUTCMinutes()).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState<number | null>(null);
