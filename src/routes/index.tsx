@@ -75,7 +75,7 @@ function Invitation() {
     if (stage !== "sealed") return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setStage("opening");
-    setTimeout(() => setStage("open"), reduced ? 50 : 2200);
+    setTimeout(() => setStage("open"), reduced ? 50 : 1100);
   };
 
   const paperVar = { "--paper-img": `url(${paperTexture})` } as CSSProperties;
@@ -83,7 +83,7 @@ function Invitation() {
   return (
     <main style={paperVar} className="min-h-screen bg-background">
       {stage !== "open" && <Envelope opening={stage === "opening"} onOpen={open} />}
-      <Hero />
+      <Hero opened={stage !== "sealed"} />
       <Countdown />
       <Events />
       <Venue />
@@ -100,10 +100,10 @@ function Envelope({ opening, onOpen }: { opening: boolean; onOpen: () => void })
     backgroundPosition: "center",
     clipPath: side === "left" ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)",
     transform: opening ? `translateX(${side === "left" ? "-55%" : "55%"})` : "none",
-    transition: "transform 1.8s cubic-bezier(.7,0,.2,1) .35s",
+    transition: "transform .8s var(--ease-move) .2s",
   });
   return (
-    <div className={`fixed inset-0 z-50 overflow-hidden transition-opacity duration-500 ${opening ? "delay-[1700ms] opacity-0" : ""}`}>
+    <div className={`fixed inset-0 z-50 overflow-hidden transition-opacity duration-[260ms] ease-[var(--ease-exit)] ${opening ? "delay-[800ms] opacity-0" : ""}`}>
       <div className="absolute inset-0" style={half("left")} />
       <div className="absolute inset-0" style={half("right")} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,var(--background)_100%)] opacity-70" />
@@ -111,7 +111,7 @@ function Envelope({ opening, onOpen }: { opening: boolean; onOpen: () => void })
         <button
           onClick={onOpen}
           aria-label="Break the seal to open the invitation"
-          className={`relative w-[38vmin] max-w-[260px] min-w-[150px] transition-all duration-700 ${opening ? "scale-125 opacity-0" : "seal-pulse"}`}
+          className={`relative w-[38vmin] max-w-[260px] min-w-[150px] press transition-all duration-[260ms] ease-[var(--ease-enter)] ${opening ? "-translate-y-6 scale-110 opacity-0" : "seal-pulse"}`}
         >
           <img src={waxSeal} alt="" width={816} height={816} className="w-full drop-shadow-2xl" />
           <span className="absolute inset-0 flex items-center justify-center font-display text-[clamp(1.6rem,6vmin,2.8rem)] italic text-highlight [text-shadow:0_1px_0_var(--paper-dark),0_-1px_0_color-mix(in_oklab,var(--highlight)_40%,transparent)]">
@@ -126,27 +126,28 @@ function Envelope({ opening, onOpen }: { opening: boolean; onOpen: () => void })
   );
 }
 
-function Hero() {
+function Hero({ opened }: { opened: boolean }) {
+  const r = (i: number) => ({ className: opened ? "rise" : "rise-wait", style: { "--i": i + 6 } as CSSProperties });
   return (
     <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-20">
       <img src={heroBackdrop} alt="" width={1536} height={1024} className="absolute inset-0 h-full w-full object-cover object-center" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--background)_55%,transparent)_0%,transparent_55%),linear-gradient(to_bottom,transparent_60%,var(--background))]" />
       <div className="lamp-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_25%,color-mix(in_oklab,var(--highlight)_18%,transparent),transparent_25%),radial-gradient(circle_at_85%_25%,color-mix(in_oklab,var(--highlight)_18%,transparent),transparent_25%)]" />
       <div className="relative text-center">
-        <p className="eyebrow rise">Bismillah · Together with their families</p>
-        <h1 className="rise mt-8 font-display font-light leading-[0.9] [animation-delay:.3s]">
-          <span className="foil-text block text-[clamp(3.5rem,14vw,9rem)]">Aarav</span>
-          <span className="my-2 block font-display text-[clamp(1.5rem,5vw,3rem)] italic text-accent">&amp;</span>
-          <span className="foil-text block text-[clamp(3.5rem,14vw,9rem)]">Anaya</span>
+        <p {...r(0)}><span className="eyebrow">Bismillah · Together with their families</span></p>
+        <h1 className="mt-8 font-display font-light leading-[0.9]">
+          <span {...r(1)}><span className="foil-text block text-[clamp(3.5rem,14vw,9rem)]">Aarav</span></span>
+          <span {...r(2)}><span className="my-2 block font-display text-[clamp(1.5rem,5vw,3rem)] italic text-accent">&amp;</span></span>
+          <span {...r(3)}><span className="foil-text block text-[clamp(3.5rem,14vw,9rem)]">Anaya</span></span>
         </h1>
-        <p className="rise mt-6 font-display text-xl italic text-foreground/85 [animation-delay:.6s] sm:text-2xl">Qubool Hai</p>
-        <div className="rise gold-frame mx-auto mt-10 max-w-xs px-8 py-6 [animation-delay:.9s]">
-          <StarRosette className="mx-auto h-5 w-5 text-accent" />
+        <p {...r(4)}><span className="mt-6 block font-display text-xl italic text-foreground/85 sm:text-2xl">Qubool Hai</span></p>
+        <div {...r(5)}><div className="gold-frame mx-auto mt-10 max-w-xs px-8 py-6">
+          <StarRosette className="float mx-auto h-5 w-5 text-accent" />
           <p className="mt-3 eyebrow">Sunday</p>
           <p className="mt-2 font-display text-3xl text-foreground">14 February 2027</p>
           <div className="mx-auto my-3 h-px w-12 bg-accent/60" />
           <p className="text-xs tracking-[0.25em] text-muted-foreground uppercase">The Grand Pavilion</p>
-        </div>
+        </div></div>
       </div>
     </section>
   );
@@ -155,7 +156,7 @@ function Hero() {
 function Section({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
     <section id={id} className="paper-ground relative px-5 py-24 sm:px-8 sm:py-32">
-      <div className="reveal relative mx-auto max-w-3xl px-6 py-14 sm:px-12 sm:py-20">
+      <div className="relative mx-auto max-w-3xl px-6 py-14 sm:px-12 sm:py-20">
         <Corners />
         {children}
       </div>
@@ -168,16 +169,16 @@ function Countdown() {
   const parts = useCountdown(WEDDING);
   return (
     <Section>
-      <Heading eyebrow="Counting the moments" title="Until We Say Qubool" />
+      <div className="reveal"><Heading eyebrow="Counting the moments" title="Until We Say Qubool" /></div>
       <div className="grid grid-cols-4 gap-2 sm:gap-5">
-        {parts.map(([label, v]) => (
-          <div key={label} className="gold-frame px-1 py-5 text-center sm:py-8">
+        {parts.map(([label, v], i) => (
+          <div key={label} style={{ "--i": i + 1 } as CSSProperties} className="reveal gold-frame px-1 py-5 text-center sm:py-8">
             <p className="font-display text-3xl tabular-nums text-highlight sm:text-5xl">{String(v).padStart(2, "0")}</p>
             <p className="mt-2 text-[0.55rem] tracking-[0.25em] text-muted-foreground uppercase sm:text-xs">{label}</p>
           </div>
         ))}
       </div>
-      <div className="mt-14 text-center">
+      <div className="reveal mt-14 text-center" style={{ "--i": 2 } as CSSProperties}>
         <p className="eyebrow mb-5">A little secret</p>
         <ScratchCard>
           <div className="text-center">
@@ -193,10 +194,10 @@ function Countdown() {
 function Events() {
   return (
     <Section>
-      <Heading eyebrow="The celebrations" title="Order of Events" />
+      <div className="reveal"><Heading eyebrow="The celebrations" title="Order of Events" /></div>
       <div className="space-y-6">
-        {EVENTS.map((e) => (
-          <article key={e.name} className="gold-frame px-6 py-8 text-center sm:px-10">
+        {EVENTS.map((e, i) => (
+          <article key={e.name} style={{ "--i": i + 1 } as CSSProperties} className="reveal gold-frame px-6 py-8 text-center sm:px-10">
             <StarRosette className="mx-auto h-6 w-6 text-accent" />
             <h3 className="mt-3 font-display text-3xl italic text-foreground sm:text-4xl">{e.name}</h3>
             <div className="mx-auto my-4 h-px w-20 bg-[image:var(--gold-foil)]" />
@@ -214,8 +215,8 @@ function Events() {
 function Venue() {
   return (
     <Section>
-      <Heading eyebrow="Where" title="The Grand Pavilion" />
-      <div className="text-center">
+      <div className="reveal"><Heading eyebrow="Where" title="The Grand Pavilion" /></div>
+      <div className="reveal text-center" style={{ "--i": 1 } as CSSProperties}>
         <p className="font-display text-xl leading-relaxed text-foreground/90">
           Beneath carved arches and lantern light,
           <br className="hidden sm:block" /> we gather to begin our forever.
@@ -225,7 +226,7 @@ function Venue() {
           href="https://maps.google.com/?q=The+Grand+Pavilion"
           target="_blank"
           rel="noreferrer"
-          className="mt-8 inline-block border border-accent px-8 py-3 text-xs tracking-[0.3em] text-accent uppercase transition-colors hover:bg-accent hover:text-background"
+          className="mt-8 inline-block border border-accent px-8 py-3 text-xs tracking-[0.3em] text-accent uppercase press hover:bg-accent hover:text-background"
         >
           Open in Maps
         </a>
@@ -240,10 +241,10 @@ function Rsvp() {
     e.preventDefault();
     setSent(true);
   };
-  const field = "w-full border-0 border-b border-accent/40 bg-transparent px-1 py-3 font-display text-lg text-foreground placeholder:text-muted-foreground/70 focus:border-accent focus:outline-none";
+  const field = "w-full border-0 border-b border-accent/40 bg-transparent px-1 py-3 font-display text-lg text-foreground placeholder:text-muted-foreground/70 focus:border-accent focus:outline-none transition-colors duration-[var(--motion-micro)] ease-[var(--ease-enter)]";
   return (
     <Section id="rsvp">
-      <Heading eyebrow="Kindly reply by 14 January 2027" title="Will You Join Us?" />
+      <div className="reveal"><Heading eyebrow="Kindly reply by 14 January 2027" title="Will You Join Us?" /></div>
       {sent ? (
         <div className="text-center">
           <StarRosette className="mx-auto h-10 w-10 text-accent" />
@@ -251,7 +252,7 @@ function Rsvp() {
           <p className="mt-2 text-muted-foreground">Your reply has been received with joy.</p>
         </div>
       ) : (
-        <form onSubmit={submit} className="mx-auto max-w-md space-y-6">
+        <form onSubmit={submit} style={{ "--i": 1 } as CSSProperties} className="reveal mx-auto max-w-md space-y-6">
           <input required placeholder="Your full name" className={field} aria-label="Full name" />
           <select required defaultValue="" className={field} aria-label="Attendance">
             <option value="" disabled className="bg-surface">Will you attend?</option>
@@ -260,7 +261,7 @@ function Rsvp() {
           </select>
           <input type="number" min={1} max={10} placeholder="Number of guests" className={field} aria-label="Number of guests" />
           <textarea rows={2} placeholder="A blessing for the couple" className={field} aria-label="Message" />
-          <button className="w-full bg-[image:var(--gold-foil)] py-4 text-xs font-medium tracking-[0.35em] text-background uppercase shadow-lg transition-transform hover:-translate-y-0.5">
+          <button className="w-full bg-[image:var(--gold-foil)] py-4 text-xs font-medium tracking-[0.35em] text-background uppercase shadow-lg press">
             Send Reply
           </button>
         </form>
